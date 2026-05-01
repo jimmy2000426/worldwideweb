@@ -71,7 +71,7 @@ function loginValidation(){
                 // 設定一個計時器 (setTimeout)，模擬伺服器處理時間，然後跳轉
                 // 這裡設定 1500 毫秒 (1.5秒) 後執行裡面的換頁動作
                 setTimeout(function() {
-                    window.location.href = 'home.html';
+                    window.location.href = 'index.html';
                 }, 1500);
             }
         });
@@ -205,7 +205,7 @@ function registerValidation(){
                 
                 // 跳轉回首頁
                 setTimeout(function() {
-                    window.location.href = 'home.html';
+                    window.location.href = 'index.html';
                 }, 1500);
             }
         });

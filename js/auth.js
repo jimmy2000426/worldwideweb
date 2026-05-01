@@ -11,7 +11,7 @@ const currentPath = window.location.pathname;
 if (currentPath.includes('admin.html') && (userRole !== 'admin' && userRole !== 'barber')) {
     alert(' 權限不足！您沒有存取員工後台的權限。');
     // 使用 replace 而不是 href，這樣使用者按瀏覽器的「上一頁」才不會又卡在無限迴圈
-    window.location.replace('home.html'); 
+    window.location.replace('index.html'); 
 }
 
 
@@ -19,7 +19,7 @@ if (currentPath.includes('admin.html') && (userRole !== 'admin' && userRole !== 
 // 任務二：更新前台導覽列按鈕狀態
 // ==========================================
 document.addEventListener('DOMContentLoaded', function() {
-    // 抓取前台的導覽列按鈕 (這些 ID 在 home.html )
+    // 抓取前台的導覽列按鈕 (這些 ID 在 index.html )
     const loginBtn = document.getElementById('customerlogin');
     const adminBtn = document.getElementById('adminLogin');
     const logoutBtn = document.getElementById('logoutLogin');

@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             setTimeout(function() {
                 localStorage.removeItem('userRole'); 
-                window.location.href = 'home.html'; // 登出後導回首頁
+                window.location.href = 'index.html'; // 登出後導回首頁
             }, 1500);
         });
     }
