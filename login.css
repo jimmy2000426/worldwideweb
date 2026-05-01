@@ -1,0 +1,92 @@
+:root {
+    --primary-gold: #d4af37;
+    }
+ 
+body {
+    /* 使用深色漸層背景讓視覺集中在中間的登入框 */
+    background: radial-gradient(circle at center, #2a2a2a 0%, #121212 100%);
+    color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    }
+
+        /* 導覽列自訂樣式 (簡化版，只需返回首頁) */
+.navbar {
+    background-color: transparent !important;
+        }
+.navbar-brand {
+        color: var(--primary-gold) !important;
+        font-weight: bold;
+        font-size: 1.5rem;
+    }
+
+    /* 登入卡片樣式 */
+    .auth-card {
+        background-color: #1e1e1e;
+        border: 1px solid #333;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    
+    /* 表單元件深色化 */
+    .form-control {
+        background-color: #2a2a2a;
+        color: #fff;
+        border: 1px solid #444;
+        padding: 12px;
+    }
+    .form-control::placeholder {
+        color: #ece9e9;
+    }
+    .form-control:focus {
+        background-color: #333;
+        color: #fff;
+        border-color: var(--primary-gold);
+        box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25);
+    }
+    .form-label {
+        color: #ccc;
+        font-size: 0.9rem;
+    }
+
+    /* Bootstrap Tabs (標籤頁) 客製化 */
+    .nav-tabs {
+        border-bottom: 1px solid #444;
+    }
+    .nav-tabs .nav-link {
+        color: #888;
+        border: none;
+        border-bottom: 2px solid transparent;
+        font-size: 1.1rem;
+        padding: 10px 20px;
+    }
+    .nav-tabs .nav-link:hover {
+        color: #fff;
+        border-color: transparent;
+    }
+    .nav-tabs .nav-link.active {
+        color: var(--primary-gold);
+        background-color: transparent;
+        border-bottom: 2px solid var(--primary-gold);
+        font-weight: bold;
+    }
+
+    /* 按鈕樣式 */
+    .btn-gold {
+        background-color: var(--primary-gold);
+        color: #000;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    .btn-gold:hover {
+        background-color: #b5952f;
+        transform: translateY(-2px);
+    }
+    
+    .text-gold {
+        color: var(--primary-gold) !important;
+    }
+    .text-color{
+        color: white !important;
+    }

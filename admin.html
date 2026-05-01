@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="barber.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <title>Style & Trim - 員工管理後台</title>
+    <style>
+
+    </style>
+</head>
+<body>
+
+    <!-- 導覽列 (Navbar) - 借用前台風格[cite: 21] -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: #000; border-bottom: 1px solid #333;">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand text-gold fw-bold" href="#">Style & Trim <span class="fs-6 text-light">| 員工後台</span></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="adminNavbar">
+                <div class="d-flex align-items-center">
+                    <span class="text-light me-3"><i class="bi bi-person-circle text-gold me-1"></i> 您好，<span id="adminNameDisplay">管理員</span></span>
+                    <button id="adminLogoutBtn" class="btn btn-sm btn-outline-danger">登出系統</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 側邊欄 (Sidebar) -->
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
+                        <span class="text-info">預約管理</span>
+                    </h6>
+                    <ul class="nav flex-column mb-3">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" data-view="dashboard">
+                                <i class="bi bi-grid-1x2-fill"></i> 今日總覽
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-view="appointments">
+                                <i class="bi bi-calendar-check-fill"></i> 預約清單
+                            </a>
+                        </li>
+                    </ul>
+
+                    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase admin-only">
+                        <span class="text-info admin-only">管理員功能</span>
+                    </h6>
+                    <ul class="nav flex-column mb-2 admin-only">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-view="reports">
+                                <i class="bi bi-bar-chart-fill"></i> 營收統計
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-view="settings">
+                                <i class="bi bi-gear-fill"></i> 店內資料設定
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- 主要內容區 (Main Content) -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 main-content">
+                
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom" style="border-color: #333 !important;">
+                    <h1 class="h2 text-gold" id="pageTitle">今日總覽</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-light text-muted" id="addreservation"><i class="bi bi-plus-lg"></i> 新增現場預約</button>
+                            <button type="button" class="btn btn-sm btn-outline-light text-muted " id="exportReportBtn"><i class="bi bi-download"></i> 匯出報表</button>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-gold dropdown-toggle">
+                            <i class="bi bi-calendar3"></i> 本週
+                        </button>
+                    </div>
+                </div>
+                <div id="view-dashboard" class="admin-view">
+                    <!-- 數據卡片列 -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-3">
+                            <div class="admin-card p-3 d-flex align-items-center">
+                                <div class="fs-1 text-gold me-3"><i class="bi bi-people-fill"></i></div>
+                                <div>
+                                    <h6 class="text-light mb-0">今日預約數</h6>
+                                    <h3 class="text-primary mb-0">12</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="admin-card p-3 d-flex align-items-center">
+                                <div class="fs-1 text-success me-3"><i class="bi bi-check-circle-fill"></i></div>
+                                <div>
+                                    <h6 class="text-light mb-0">已完成服務</h6>
+                                    <h3 class="text-primary mb-0">5</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="admin-card p-3 d-flex align-items-center">
+                                <div class="fs-1 text-warning me-3"><i class="bi bi-clock-history"></i></div>
+                                <div>
+                                    <h6 class="text-light mb-0 ">待處理</h6>
+                                    <h3 class="text-primary mb-0">7</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 admin-only">
+                            <div class="admin-card p-3 d-flex align-items-center">
+                                <div class="fs-1 text-info me-3"><i class="bi bi-currency-dollar"></i></div>
+                                <div>
+                                    <h6 class="text-light mb-0">今日預估營收</h6>
+                                    <h3 class="text-primary mb-0">NT$ 9,600</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 預約清單表格 -->
+                    <h3 id="view-dashboard" class="mt-4 mb-3 text-primary ">即將到來預約</h3>
+                    <div class="table-responsive admin-card p-3 ">
+                        <table class="table table-dark table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">時間</th>
+                                    <th scope="col">顧客姓名</th>
+                                    <th scope="col">服務項目</th>
+                                    <th scope="col">指定設計師</th>
+                                    <th scope="col">狀態</th>
+                                    <th scope="col">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>14:30</td>
+                                    <td>王先生</td>
+                                    <td>經典洗剪 + 頭皮隔離</td>
+                                    <td>Alex</td>
+                                    <td><span class="badge bg-warning text-dark">待服務</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success"><i class="bi bi-check2"></i> 完成</button>
+                                        <button class="btn btn-sm btn-outline-light"><i class="bi bi-pencil"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>15:30</td>
+                                    <td>李小姐</td>
+                                    <td>質感染髮</td>
+                                    <td>Ben</td>
+                                    <td><span class="badge bg-warning text-dark">待服務</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success"><i class="bi bi-check2"></i> 完成</button>
+                                        <button class="btn btn-sm btn-outline-light"><i class="bi bi-pencil"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>11:00</td>
+                                    <td>張先生</td>
+                                    <td>經典洗剪</td>
+                                    <td>Chad</td>
+                                    <td><span class="badge bg-secondary">已完成</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-secondary" disabled>已結帳</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 視圖 2：預約清單 (預設隱藏 style="display: none;") -->
+    <div id="view-appointments" class="admin-view col-md-9 ms-sm-auto col-lg-10" style="display: none;">
+        <div class="table-responsive admin-card p-3 ">
+            <table class="table table-dark table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">時間</th>
+                        <th scope="col">顧客姓名</th>
+                        <th scope="col">服務項目</th>
+                        <th scope="col">指定設計師</th>
+                        <th scope="col">狀態</th>
+                        <th scope="col">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>14:30</td>
+                        <td>王先生</td>
+                        <td>經典洗剪 + 頭皮隔離</td>
+                        <td>Alex</td>
+                        <td><span class="badge bg-warning text-dark">待服務</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-success"><i class="bi bi-check2"></i> 完成</button>
+                            <button class="btn btn-sm btn-outline-light"><i class="bi bi-pencil"></i></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>15:30</td>
+                        <td>李小姐</td>
+                        <td>質感染髮</td>
+                        <td>Ben</td>
+                        <td><span class="badge bg-warning text-dark">待服務</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-success"><i class="bi bi-check2"></i> 完成</button>
+                            <button class="btn btn-sm btn-outline-light"><i class="bi bi-pencil"></i></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>11:00</td>
+                        <td>張先生</td>
+                        <td>經典洗剪</td>
+                        <td>Chad</td>
+                        <td><span class="badge bg-secondary">已完成</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-secondary" disabled>已結帳</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 視圖 3：營收統計 (預設隱藏) -->
+    <div id="view-reports" class="admin-view col-md-9 ms-sm-auto col-lg-10" style="display: none;">
+        <!-- 頂部核心數據列 -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="admin-card p-4 text-center border-gold">
+                    <h6 class="text-white mb-2">今日預估總營收</h6>
+                    <h2 class="text-gold fw-bold mb-0">NT$ 9,600</h2>
+                    <small class="text-success"><i class="bi bi-arrow-up-right"></i> 較昨日 +12%</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="admin-card p-4 text-center">
+                    <h6 class="text-white mb-2">客單價 (平均)</h6>
+                    <h2 class="text-light fw-bold mb-0">NT$ 800</h2>
+                    <small class="text-white">總來客數 12 人</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="admin-card p-4 text-center">
+                    <h6 class="text-white mb-2">加購服務轉換率</h6>
+                    <h2 class="text-info fw-bold mb-0">45%</h2>
+                    <small class="text-white">5 人選擇加購</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 視圖 4：店內資料設定 (預設隱藏) -->
+    <div id="view-settings" class="admin-view col-md-9 ms-sm-auto col-lg-10" style="display: none; padding: 2rem;">
+        <div class="row g-4">
+            <!-- 左欄：營業設定與一般資訊 -->
+            <div class="col-lg-6">
+                <div class="admin-card p-4 mb-4">
+                    <h5 class="text-light mb-4"><i class="bi bi-shop text-gold me-2"></i> 基本營業資訊</h5>
+                    <form>
+                        <div class="mb-3">
+                            <label for="storeName" class="form-label text-light">店鋪名稱</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="storeName" value="Style & Trim">
+                        </div>
+                        <div class="mb-3">
+                            <label for="storePhone" class="form-label text-light">聯絡電話</label>
+                            <input type="tel" class="form-control bg-dark text-light border-secondary" id="storePhone" value="02-1234-5678">
+                        </div>
+                        <div class="mb-3">
+                            <label for="storeAddress" class="form-label text-light">店鋪地址</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="storeAddress" value="台北市大安區理髮路 123 號">
+                        </div>
+                        <button type="button" class="btn btn-sm btn-gold mt-2">儲存變更</button>
+                    </form>
+                </div>
+
+                <div class="admin-card p-4">
+                    <h5 class="text-light mb-4"><i class="bi bi-clock-fill text-gold me-2"></i> 營業時間設定</h5>
+                    <!-- 營業時間列表 -->
+                    <ul class="list-group list-group-flush bg-transparent">
+                        <li class="list-group-item bg-transparent text-light border-secondary px-0 d-flex justify-content-between align-items-center">
+                            <span>平日 (一至五)</span>
+                            <div class="d-flex align-items-center">
+                                <input type="time" class="form-control form-control-sm bg-dark text-light border-secondary w-auto me-2" value="10:00">
+                                <span class="me-2">-</span>
+                                <input type="time" class="form-control form-control-sm bg-dark text-light border-secondary w-auto" value="20:00">
+                            </div>
+                        </li>
+                        <li class="list-group-item bg-transparent text-light border-secondary px-0 d-flex justify-content-between align-items-center">
+                            <span>週末 (六、日)</span>
+                            <div class="d-flex align-items-center">
+                                <input type="time" class="form-control form-control-sm bg-dark text-light border-secondary w-auto me-2" value="09:00">
+                                <span class="me-2">-</span>
+                                <input type="time" class="form-control form-control-sm bg-dark text-light border-secondary w-auto" value="21:00">
+                            </div>
+                        </li>
+                        <li class="list-group-item bg-transparent text-light border-secondary px-0 d-flex justify-content-between align-items-center mt-2">
+                            <span>公休日</span>
+                            <select class="form-select form-select-sm bg-dark text-light border-secondary w-auto">
+                                <option value="none">無固定</option>
+                                <option value="1">星期一</option>
+                                <option value="2">星期二</option>
+                            </select>
+                        </li>
+                    </ul>
+                    <button type="button" class="btn btn-sm btn-outline-light mt-3">更新營業時間</button>
+                </div>
+            </div>
+
+            <!-- 右欄：服務項目與帳號管理 -->
+            <div class="col-lg-6">
+                <div class="admin-card p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="text-light mb-0"><i class="bi bi-scissors text-gold me-2"></i> 服務項目管理</h5>
+                        <button class="btn btn-sm btn-outline-gold"><i class="bi bi-plus"></i> 新增項目</button>
+                    </div>
+                    
+                    <table class="table table-dark table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th>項目名稱</th>
+                                <th>價格</th>
+                                <th>時長</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>經典洗剪</td>
+                                <td>$600</td>
+                                <td>45m</td>
+                                <td><button class="btn btn-sm text-light"><i class="bi bi-pencil"></i></button></td>
+                            </tr>
+                            <tr>
+                                <td>質感染髮</td>
+                                <td>$1500</td>
+                                <td>120m</td>
+                                <td><button class="btn btn-sm text-light"><i class="bi bi-pencil"></i></button></td>
+                            </tr>
+                            <tr>
+                                <td>頭皮養護</td>
+                                <td>$800</td>
+                                <td>60m</td>
+                                <td><button class="btn btn-sm text-light"><i class="bi bi-pencil"></i></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="admin-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="text-light mb-0"><i class="bi bi-people-fill text-gold me-2"></i> 員工帳號管理</h5>
+                        <button class="btn btn-sm btn-outline-gold"><i class="bi bi-plus"></i> 新增帳號</button>
+                    </div>
+                    
+                    <ul class="list-group list-group-flush bg-transparent">
+                        <li class="list-group-item bg-transparent text-light border-secondary px-0 d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">Alex</h6>
+                                <small class="text-light">管理員 / 店長</small>
+                            </div>
+                            <span class="badge bg-gold text-dark">Active</span>
+                        </li>
+                        <li class="list-group-item bg-transparent text-light border-secondary px-0 d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">Ben</h6>
+                                <small class="text-light">理髮師</small>
+                            </div>
+                            <span class="badge bg-success">Active</span>
+                        </li>
+                        <li class="list-group-item bg-transparent text-light border-secondary px-0 d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">Chad</h6>
+                                <small class="text-light">理髮師</small>
+                            </div>
+                            <span class="badge bg-success">Active</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 處理中與成功提示的專屬小對話框 (沿用[cite: 21]) -->
+    <div class="modal fade" id="statusModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content dark-mode text-center p-4" style="border: 1px solid #d4af37;">
+                <div id="statusModalContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 編輯預約專屬 Modal -->
+    <div class="modal fade" id="editReservationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content dark-mode" style="border: 1px solid #d4af37;">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-gold"><i class="bi bi-pencil-square me-2"></i>修改預約內容</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="editReservationForm">
+                        <div class="mb-3">
+                            <label class="form-label text-light">顧客姓名 <small class="text-muted">(不可修改)</small></label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="editCustomerName" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-light">預約時間</label>
+                            <input type="time" class="form-control bg-dark text-light border-secondary" id="editTime">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-light">指定設計師</label>
+                            <select class="form-select bg-dark text-light border-secondary" id="editDesigner">
+                                <option value="Alex">Alex</option>
+                                <option value="Ben">Ben</option>
+                                <option value="Chad">Chad</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn" style="background-color: #d4af37; color: #000; font-weight: bold;" id="saveEditBtn">儲存修改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="auth.js"></script> <!-- 引入權限檢查腳本 -->
+    <script src="barber.js"></script>
+
+</body>
+</html>
