@@ -1,2 +1,7 @@
-# worldwideweb
-web system for www class
+# 全球資訊網期中作業
+
+css資料夾存放三個網頁的額外添加的網頁外觀
+
+js資料夾存放的網頁函數:有權限偵測和網頁本身的函數
+
+admin.html是後臺網頁、index.html是首頁、login.html是登入/註冊畫面的網頁
