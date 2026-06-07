@@ -1,0 +1,295 @@
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useApp } from '../context/AppContext';
+import { ArtworkPanel, formatCurrency } from '../components/Ui';
+import { makeSalonArtwork } from '../utils/visuals';
+
+const heroSlides = [
+  {
+    eyebrow: 'Salon Mood',
+    title: '',
+    subtitle: '',
+    tone: 'gold',
+  },
+  {
+    eyebrow: 'Hair Story',
+    title: '',
+    subtitle: '',
+    tone: 'rose',
+  },
+  {
+    eyebrow: 'Style & Trim',
+    title: '',
+    subtitle: ' ',
+    tone: 'moss',
+  },
+];
+
+const featuredWorks = [
+  { title: '奶茶霧棕', tags: ['柔霧', '好整理'], tone: 'gold' },
+  { title: '俐落短髮', tags: ['輪廓感', '清爽'], tone: 'ink' },
+  { title: '霧面灰棕', tags: ['氣質感', '低調'], tone: 'rose' },
+  { title: '自然內彎', tags: ['日常感', '柔和'], tone: 'moss' },
+  { title: '鬆感燙髮', tags: ['空氣感', '蓬鬆'], tone: 'gold' },
+  { title: '深色光澤染', tags: ['沉穩', '有質感'], tone: 'ink' },
+];
+
+const designerGroups = [
+  [
+    { name: 'Alex', style: '油頭 / 漸層推剪', vibe: '輪廓乾淨，線條俐落。', tone: 'gold' },
+    { name: 'BEN', style: '燙髮 / 染髮設計', vibe: '偏日韓感，顏色和層次都細緻。', tone: 'rose' },
+    { name: 'Joy', style: '短髮 / 質感造型', vibe: '擅長把日常髮型做得更有精神。', tone: 'ink' },
+  ],
+  [
+    { name: 'Mila', style: '長髮 / 柔霧染髮', vibe: '適合想保留柔軟感的客人。', tone: 'moss' },
+    { name: 'Neo', style: '男生髮 / 油頭剪裁', vibe: '重視輪廓與整理手感。', tone: 'gold' },
+    { name: 'Luna', style: '中長髮 / 空氣感', vibe: '自然、輕盈，日常也很好打理。', tone: 'rose' },
+  ],
+];
+
+const bookingSteps = [
+  { number: '01', title: '先看作品', text: '從圖片挑喜歡的感覺。' },
+  { number: '02', title: '選服務', text: '洗剪、染髮、護理先選好。' },
+  { number: '03', title: '選時間', text: '挑一個你方便的日期和時段。' },
+  { number: '04', title: '送出預約', text: '留下姓名和電話，等待確認。' },
+];
+
+function HeroCarousel() {
+  const [index, setIndex] = useState(0);
+  const current = heroSlides[index];
+  const image = useMemo(() => makeSalonArtwork(current.tone), [current.tone]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setIndex((value) => (value + 1) % heroSlides.length);
+    }, 5000);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
+  return (
+    <section className="hero-carousel">
+      <div className="hero-carousel__media" style={{ backgroundImage: `url("${image}")` }} aria-hidden="true" />
+      <div className="hero-carousel__scrim" />
+      <div className="hero-carousel__content">
+        <p className="section-eyebrow">{current.eyebrow}</p>
+        <h1>{current.title}</h1>
+        <p>{current.subtitle}</p>
+        <div className="hero-carousel__actions">
+          <Link to="/booking" className="button button--gold">
+            立即預約
+          </Link>
+          <Link to="/works" className="button button--ghost">
+            查看作品
+          </Link>
+        </div>
+      </div>
+      <div className="hero-carousel__dots" aria-label="形象輪播切換">
+        {heroSlides.map((slide, slideIndex) => (
+          <button
+            key={slide.eyebrow}
+            type="button"
+            className={index === slideIndex ? 'hero-carousel__dot is-active' : 'hero-carousel__dot'}
+            onClick={() => setIndex(slideIndex)}
+            aria-label={`切換到 ${slide.eyebrow}`}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function BrandIntro() {
+  const image = useMemo(() => makeSalonArtwork('gold'), []);
+
+  return (
+    <section className="brand-intro" id="brand">
+      <div className="brand-intro__media" style={{ backgroundImage: `url("${image}")` }} aria-hidden="true" />
+      <div className="brand-intro__copy">
+        <p className="section-eyebrow">品牌簡介</p>
+        <h2>Style &amp; Trim</h2>
+        <p className="brand-intro__subtitle">理髮預約、作品與風格</p>
+        <p className="brand-intro__text">
+          讓焦點留給髮型本身。
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function WorkCard({ work }) {
+  const image = useMemo(() => makeSalonArtwork(work.tone), [work.tone]);
+
+  return (
+    <article className="work-card">
+      <div className="work-card__image" style={{ backgroundImage: `url("${image}")` }} aria-hidden="true" />
+      <div className="work-card__meta">
+        <strong>{work.title}</strong>
+        <div className="work-card__tags">
+          {work.tags.map((tag) => (
+            <span key={tag}>{tag}</span>
+          ))}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function DesignerCard({ item }) {
+  const image = useMemo(() => makeSalonArtwork(item.tone), [item.tone]);
+
+  return (
+    <article className="designer-card">
+      <div className="designer-card__image" style={{ backgroundImage: `url("${image}")` }} aria-hidden="true" />
+      <div className="designer-card__body">
+        <strong>{item.name}</strong>
+        <span className="designer-card__hint"></span>
+      </div>
+      <div className="designer-card__overlay">
+        <p>{item.style}</p>
+        <small>{item.vibe}</small>
+      </div>
+    </article>
+  );
+}
+
+export function HomePage() {
+  const { state } = useApp();
+  const [groupIndex, setGroupIndex] = useState(0);
+
+  const services = state?.services?.filter((service) => service.isActive) ?? [];
+  const activeDesigners = designerGroups[groupIndex];
+  const displayWorks = featuredWorks.slice(0, 6);
+
+  return (
+    <>
+      <HeroCarousel />
+      <BrandIntro />
+
+      <section className="page-block" id="works">
+        <div className="page-block__head">
+          <div>
+            <p className="section-eyebrow"></p>
+            <h2>hair stlye</h2>
+          </div>
+          <Link to="/works" className="button button--ghost">
+            查看更多作品
+          </Link>
+        </div>
+        <div className="work-grid">
+          {displayWorks.map((work) => (
+            <WorkCard key={work.title} work={work} />
+          ))}
+        </div>
+      </section>
+
+      <section className="page-block" id="designers">
+        <div className="page-block__head">
+          <div>
+            <p className="section-eyebrow">設計師</p>
+            <h2></h2>
+          </div>
+          <div className="page-block__actions">
+            <button
+              type="button"
+              className="button button--ghost"
+              onClick={() => setGroupIndex((value) => (value + designerGroups.length - 1) % designerGroups.length)}
+            >
+              上一組
+            </button>
+            <button
+              type="button"
+              className="button button--gold"
+              onClick={() => setGroupIndex((value) => (value + 1) % designerGroups.length)}
+            >
+              下一組
+            </button>
+          </div>
+        </div>
+        <div className="designer-grid">
+          {activeDesigners.map((designer) => (
+            <DesignerCard key={designer.name} item={designer} />
+          ))}
+        </div>
+      </section>
+
+      <section className="page-block" id="services">
+        <div className="page-block__head">
+          <div>
+            <p className="section-eyebrow">服務項目</p>
+            <h2></h2>
+          </div>
+        </div>
+        <div className="service-grid--lite">
+          {services.map((service) => (
+            <article key={service.id} className="service-lite-card">
+              <div className="service-lite-card__top">
+                <strong>{service.name}</strong>
+                <span>{service.priceRange}</span>
+              </div>
+              <p>{service.teaser}</p>
+              <small>
+                {formatCurrency(service.basePrice)} 起，約 {service.durationMinutes} 分鐘
+              </small>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="page-block" id="location">
+        <div className="page-block__head">
+          <div>
+            <p className="section-eyebrow">門市資訊</p>
+            <h2></h2>
+          </div>
+        </div>
+        <div className="location-card">
+          <div className="location-card__detail">
+            <div className="location-card__list">
+              <div className="location-card__row">
+                <span>地址</span>
+                <strong>高雄市燕巢區深水里67號</strong>
+              </div>
+              <div className="location-card__row">
+                <span>電話</span>
+                <strong>02-1234-5678</strong>
+              </div>
+              <div className="location-card__row">
+                <span>營業</span>
+                <strong>11:00 - 20:00，週一公休</strong>
+              </div>
+            </div>
+          </div>
+          <ArtworkPanel
+            label="店內氛圍"
+            title="安靜、明亮、好整理的空間。"
+            description=""
+            tone="moss"
+            className="artwork-panel--location"
+          />
+        </div>
+      </section>
+
+      <section className="page-block" id="booking-guide">
+        <div className="page-block__head">
+          <div>
+            <p className="section-eyebrow">預約引導</p>
+            <h2>四步完成預約</h2>
+          </div>
+          <Link to="/booking" className="button button--gold">
+            立即預約
+          </Link>
+        </div>
+        <div className="step-grid">
+          {bookingSteps.map((step) => (
+            <article key={step.number} className="step-card">
+              <span>{step.number}</span>
+              <h3>{step.title}</h3>
+              <p>{step.text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    </>
+  );
+}
