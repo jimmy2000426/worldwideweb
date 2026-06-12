@@ -3,13 +3,16 @@ import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { ArtworkPanel, formatCurrency } from '../components/Ui';
 import { makeSalonArtwork } from '../utils/visuals';
+import shampooSlide from '../assets/hero-slides/shampoo.webp';
+import cuttingSlide from '../assets/hero-slides/cutting.webp';
+import coloringSlide from '../assets/hero-slides/coloring.webp';
 
 const heroSlides = [
   {
     eyebrow: 'Salon Mood',
     title: '',
     subtitle: '',
-    image: '/hero-slides/shampoo.png',
+    image: shampooSlide,
     fit: 'contain',
     background: '#f7efe1',
     position: 'center center',
@@ -19,7 +22,7 @@ const heroSlides = [
     eyebrow: 'Hair Story',
     title: '',
     subtitle: '',
-    image: '/hero-slides/cutting.png',
+    image: cuttingSlide,
     fit: 'cover',
     background: '#f4e1c4',
     position: 'center center',
@@ -29,7 +32,7 @@ const heroSlides = [
     eyebrow: 'Style & Trim',
     title: '',
     subtitle: ' ',
-    image: '/hero-slides/coloring.png',
+    image: coloringSlide,
     fit: 'cover',
     background: '#f4e7e0',
     position: 'center center',
