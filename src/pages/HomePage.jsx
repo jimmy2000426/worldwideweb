@@ -9,18 +9,30 @@ const heroSlides = [
     eyebrow: 'Salon Mood',
     title: '',
     subtitle: '',
+    image: '/hero-slides/shampoo.png',
+    fit: 'contain',
+    background: '#f7efe1',
+    position: 'center center',
     tone: 'gold',
   },
   {
     eyebrow: 'Hair Story',
     title: '',
     subtitle: '',
+    image: '/hero-slides/cutting.png',
+    fit: 'cover',
+    background: '#f4e1c4',
+    position: 'center center',
     tone: 'rose',
   },
   {
     eyebrow: 'Style & Trim',
     title: '',
     subtitle: ' ',
+    image: '/hero-slides/coloring.png',
+    fit: 'cover',
+    background: '#f4e7e0',
+    position: 'center center',
     tone: 'moss',
   },
 ];
@@ -57,20 +69,57 @@ const bookingSteps = [
 function HeroCarousel() {
   const [index, setIndex] = useState(0);
   const current = heroSlides[index];
-  const image = useMemo(() => makeSalonArtwork(current.tone), [current.tone]);
+  const image = useMemo(() => current.image ?? makeSalonArtwork(current.tone), [current.image, current.tone]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
       setIndex((value) => (value + 1) % heroSlides.length);
-    }, 5000);
+    }, 12000);
 
     return () => window.clearInterval(timer);
   }, []);
 
+  const goToPrevious = () => {
+    setIndex((value) => (value + heroSlides.length - 1) % heroSlides.length);
+  };
+
+  const goToNext = () => {
+    setIndex((value) => (value + 1) % heroSlides.length);
+  };
+
   return (
     <section className="hero-carousel">
-      <div className="hero-carousel__media" style={{ backgroundImage: `url("${image}")` }} aria-hidden="true" />
+      <div
+        className="hero-carousel__media"
+        style={{
+          backgroundImage: `url("${image}")`,
+          backgroundSize: current.fit ?? 'cover',
+          backgroundColor: current.background ?? 'transparent',
+          backgroundPosition: current.position ?? 'center center',
+        }}
+        aria-hidden="true"
+      />
       <div className="hero-carousel__scrim" />
+      <button
+        type="button"
+        className="hero-carousel__arrow hero-carousel__arrow--prev"
+        onClick={goToPrevious}
+        aria-label="切換到上一張圖片"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+      <button
+        type="button"
+        className="hero-carousel__arrow hero-carousel__arrow--next"
+        onClick={goToNext}
+        aria-label="切換到下一張圖片"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
       <div className="hero-carousel__content">
         <p className="section-eyebrow">{current.eyebrow}</p>
         <h1>{current.title}</h1>
@@ -106,9 +155,7 @@ function BrandIntro() {
     <section className="brand-intro" id="brand">
       <div className="brand-intro__media" style={{ backgroundImage: `url("${image}")` }} aria-hidden="true" />
       <div className="brand-intro__copy">
-        <p className="section-eyebrow">品牌簡介</p>
         <h2>Style &amp; Trim</h2>
-        <p className="brand-intro__subtitle">理髮預約、作品與風格</p>
         <p className="brand-intro__text">
           讓焦點留給髮型本身。
         </p>

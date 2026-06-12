@@ -81,40 +81,47 @@ export function Layout() {
         <Outlet />
       </main>
       <footer className="site-footer">
-        <section className="site-footer__panel site-footer__panel--brand" aria-label="品牌資訊">
-          <div className="site-footer__brand">
-            <span className="site-footer__icon">S</span>
+        <div className="site-footer__inner">
+          <section className="site-footer__brand" aria-label="品牌資訊">
+            <img className="site-footer__icon" src="/icon.png" alt="" aria-hidden="true" />
             <div className="site-footer__brand-copy">
-              <strong>Style &amp; Trim</strong>
-              <p>剪髮、預約、風格整理</p>
+              <span className="site-footer__brand-name">Style &amp; Trim</span>
+              <p>理髮預約、作品與風格</p>
             </div>
-          </div>
-        </section>
-        <section className="site-footer__panel site-footer__panel--contact" aria-label="電話資訊">
-          <span className="site-footer__label">Phone</span>
-          <strong className="site-footer__value">02-1234-5678</strong>
-        </section>
-        <section className="site-footer__panel site-footer__panel--contact" aria-label="地點資訊">
-          <span className="site-footer__label">Location</span>
-          <strong className="site-footer__value">高雄市燕巢區深水里67號</strong>
-        </section>
-        <section className="site-footer__panel site-footer__panel--social" aria-label="社群連結">
-          <span className="site-footer__label">Social</span>
-          <div className="site-footer__socials">
-            {socialLinks.map((item) => (
-              <a
-                key={item.label}
-                className={item.className}
-                href={item.href}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={item.label}
-              >
-                {item.icon}
-              </a>
-            ))}
-          </div>
-        </section>
+          </section>
+          <section className="site-footer__contact" aria-label="聯絡資訊">
+            <span className="site-footer__label">Contact</span>
+            <ul className="site-footer__contact-list">
+              <li className="site-footer__contact-item">
+                <span className="site-footer__contact-name">Phone:</span>
+                <a className="site-footer__contact-value" href="tel:0212345678">
+                  01234567
+                </a>
+              </li>
+              <li className="site-footer__contact-item">
+                <span className="site-footer__contact-name">Location:</span>
+                <span className="site-footer__contact-value">高雄市燕巢區深水里67號</span>
+              </li>
+            </ul>
+          </section>
+          <section className="site-footer__social" aria-label="社群連結">
+            <span className="site-footer__label">Social</span>
+            <div className="site-footer__socials">
+              {socialLinks.map((item) => (
+                <a
+                  key={item.label}
+                  className={item.className}
+                  href={item.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={item.label}
+                >
+                  {item.icon}
+                </a>
+              ))}
+            </div>
+          </section>
+        </div>
       </footer>
     </div>
   );

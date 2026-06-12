@@ -31,7 +31,7 @@ export function NavBar() {
     <header className="topbar">
       <div className="topbar__inner">
         <Link to="/" className="brand">
-          <span className="brand__mark">S</span>
+          <img className="brand__mark" src="/icon.png" alt="" aria-hidden="true" />
           <span className="brand__text">
             <strong>Style &amp; Trim</strong>
             <small>理髮預約與風格設計</small>
