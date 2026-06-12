@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: style-trim-api
+    runtime: python
+    rootDir: backend
+    region: singapore
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m uvicorn app.main:create_app --factory --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: style-trim-db
+          property: connectionString
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_MINUTES
+        value: 30
+      - key: REFRESH_TOKEN_DAYS
+        value: 30
+      - key: SEED_DEMO_DATA
+        value: "true"
+      - key: TIMEZONE
+        value: Asia/Taipei
+      - key: CORS_ORIGINS
+        sync: false
+
+databases:
+  - name: style-trim-db
+    region: singapore
+    plan: basic-256mb
+    databaseName: styletrim
+    user: styletrim
+    postgresMajorVersion: "18"
