@@ -1,7 +1,20 @@
 import { createSeedState } from '../data/seedData';
 import { addDays, formatDateInput } from '../utils/date';
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
+function getDefaultApiBaseUrl() {
+  if (typeof window === 'undefined') {
+    return 'http://localhost:8000';
+  }
+
+  const { hostname } = window.location;
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:8000';
+  }
+
+  return 'https://style-trim-api.onrender.com';
+}
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || getDefaultApiBaseUrl()).replace(/\/$/, '');
 const SESSION_KEY = 'styletrim-session-v2';
 const LEGACY_ROLE_KEY = 'userRole';
 const LEGACY_NAME_KEY = 'userName';
@@ -163,14 +176,19 @@ function buildHeaders(token) {
 }
 
 async function fetchJson(path, { method = 'GET', body, token } = {}) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers: {
-      ...buildHeaders(token),
-      ...(body ? { 'Content-Type': 'application/json' } : {}),
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers: {
+        ...buildHeaders(token),
+        ...(body ? { 'Content-Type': 'application/json' } : {}),
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch {
+    throw new ApiError('NETWORK_ERROR', '無法連線到伺服器，請稍後再試。');
+  }
 
   let data = null;
   const text = await response.text();

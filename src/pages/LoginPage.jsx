@@ -87,13 +87,13 @@ export function LoginPage() {
   };
 
   const shownError = localError || error;
+  const busyLabel = mode === 'login' ? '登入中，請稍候…' : '建立帳號中，請稍候…';
 
   return (
     <section className="auth-layout">
       <div className="auth-visual">
         <ArtworkPanel
           label="會員空間"
-          title="把預約留給自己，接下來交給我們"
           description="登入後可以快速查看預約、確認時間與管理紀錄。"
           tone="gold"
           className="artwork-panel--auth"
@@ -106,6 +106,16 @@ export function LoginPage() {
       </div>
 
       <div className="auth-card">
+        {busy ? (
+          <div className="auth-modal" role="status" aria-live="polite" aria-label={busyLabel}>
+            <div className="auth-modal__panel">
+              <span className="auth-modal__spinner" aria-hidden="true" />
+              <strong>{busyLabel}</strong>
+              <p>系統正在處理你的請求，完成後會自動前往下一頁。</p>
+            </div>
+          </div>
+        ) : null}
+
         <div className="auth-card__header">
           <h1>會員登入</h1>
           <p>先登入，再預約。</p>
@@ -116,6 +126,7 @@ export function LoginPage() {
             type="button"
             className={mode === 'login' ? 'auth-tabs__button is-active' : 'auth-tabs__button'}
             onClick={() => setMode('login')}
+            disabled={busy}
           >
             登入
           </button>
@@ -123,6 +134,7 @@ export function LoginPage() {
             type="button"
             className={mode === 'register' ? 'auth-tabs__button is-active' : 'auth-tabs__button'}
             onClick={() => setMode('register')}
+            disabled={busy}
           >
             註冊
           </button>

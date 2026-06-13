@@ -211,15 +211,13 @@ export function BookingPage() {
       <div className="booking-page__hero">
         <div className="booking-page__hero-copy">
           <SectionHeader
-            eyebrow="線上預約"
-            title="把服務和時間，一次選好"
-            description="只保留客人需要的資訊，讓你快速完成預約。"
+            title="線上預約"
           />
         </div>
         <ArtworkPanel
           label="今日靈感"
           title="俐落、乾淨、好整理的造型"
-          description="適合想要快速整理，也想保留風格感的客人。"
+          description="適合想要快速整理，也想保留風格感的客人"
           tone="rose"
           className="artwork-panel--booking"
         />
@@ -233,7 +231,7 @@ export function BookingPage() {
             <SectionHeader
               eyebrow="服務選擇"
               title="選擇你要的服務"
-              description="先挑今天最需要的整理或造型。"
+              description="先挑今天最需要的整理或造型"
             />
             <div className="grid grid--services">
               {services.map((item) => (
@@ -257,7 +255,7 @@ export function BookingPage() {
             <SectionHeader
               eyebrow="加購"
               title="可選加購項目"
-              description="想加強舒適感或保養效果，可以一起選。"
+              description="想加強舒適感或保養效果，可以一起選"
             />
             <div className="addons-grid">
               {addons.map((addon) => (
@@ -279,7 +277,7 @@ export function BookingPage() {
             <SectionHeader
               eyebrow="設計師"
               title="是否指定設計師"
-              description="可以交給店裡安排，也能自己挑設計師。"
+              description="可以交給店裡安排，也能自己挑設計師"
             />
             <div className="mode-switch">
               <button
@@ -339,7 +337,6 @@ export function BookingPage() {
             <SectionHeader
               eyebrow="時間與聯絡"
               title="選定日期、時間與聯絡資料"
-              description="把時間和聯絡方式填好，就能送出。"
             />
             <div className="form-grid">
               <label>

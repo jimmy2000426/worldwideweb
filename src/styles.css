@@ -672,6 +672,8 @@ button {
 }
 
 .auth-card {
+  position: relative;
+  overflow: hidden;
   border-radius: var(--radius-xl);
   padding: 28px;
 }
@@ -800,6 +802,55 @@ button {
   color: var(--text);
   background: rgba(255, 255, 255, 0.04);
   border-color: rgba(255, 255, 255, 0.08);
+}
+
+.auth-modal {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(246, 239, 229, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+.auth-modal__panel {
+  width: min(320px, 100%);
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 24px 22px;
+  border-radius: 24px;
+  border: 1px solid rgba(130, 107, 82, 0.14);
+  background: rgba(255, 250, 244, 0.96);
+  box-shadow: 0 20px 40px rgba(100, 77, 54, 0.18);
+  text-align: center;
+}
+
+.auth-modal__panel strong {
+  font-size: 1.05rem;
+}
+
+.auth-modal__panel p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.auth-modal__spinner {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 4px solid rgba(183, 144, 93, 0.18);
+  border-top-color: var(--gold);
+  animation: auth-spin 0.9s linear infinite;
+}
+
+@keyframes auth-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .hint-card {

@@ -67,9 +67,7 @@ export function AppointmentsPage() {
     <section className="content-section">
       <div className="content-section__header">
         <SectionHeader
-          eyebrow="我的預約"
-          title="查看你目前的預約安排"
-          description="這裡只會列出預約項目、日期時間、設計師與狀態。"
+          title="目前的預約安排"
         />
         <div className="header-actions">
           <button type="button" className="button button--ghost" onClick={() => navigate('/booking')}>
@@ -96,7 +94,7 @@ export function AppointmentsPage() {
       {!appointments.length ? (
         <EmptyState
           title="目前沒有任何預約"
-          description="現在就到預約頁挑一個喜歡的服務與時間。"
+          description="現在就到預約頁挑一個喜歡的服務與時間吧！"
           action={
             <Link className="button button--gold" to="/booking">
               前往預約
