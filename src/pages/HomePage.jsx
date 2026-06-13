@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { ArtworkPanel, formatCurrency } from '../components/Ui';
+import { formatCurrency } from '../components/Ui';
 import { makeSalonArtwork } from '../utils/visuals';
 import shampooSlide from '../assets/hero-slides/shampoo.webp';
 import cuttingSlide from '../assets/hero-slides/cutting.webp';
@@ -60,13 +60,6 @@ const designerGroups = [
     { name: 'Neo', style: '男生髮 / 油頭剪裁', vibe: '重視輪廓與整理手感。', tone: 'gold' },
     { name: 'Luna', style: '中長髮 / 空氣感', vibe: '自然、輕盈，日常也很好打理。', tone: 'rose' },
   ],
-];
-
-const bookingSteps = [
-  { number: '01', title: '先看作品', text: '從圖片挑喜歡的感覺。' },
-  { number: '02', title: '選服務', text: '洗剪、染髮、護理先選好。' },
-  { number: '03', title: '選時間', text: '挑一個你方便的日期和時段。' },
-  { number: '04', title: '送出預約', text: '留下姓名和電話，等待確認。' },
 ];
 
 function HeroCarousel() {
@@ -281,61 +274,6 @@ export function HomePage() {
               <small>
                 {formatCurrency(service.basePrice)} 起，約 {service.durationMinutes} 分鐘
               </small>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="page-block" id="location">
-        <div className="page-block__head">
-          <div>
-            <p className="section-eyebrow">門市資訊</p>
-            <h2></h2>
-          </div>
-        </div>
-        <div className="location-card">
-          <div className="location-card__detail">
-            <div className="location-card__list">
-              <div className="location-card__row">
-                <span>地址</span>
-                <strong>高雄市燕巢區深水里67號</strong>
-              </div>
-              <div className="location-card__row">
-                <span>電話</span>
-                <strong>02-1234-5678</strong>
-              </div>
-              <div className="location-card__row">
-                <span>營業</span>
-                <strong>11:00 - 20:00，週一公休</strong>
-              </div>
-            </div>
-          </div>
-          <ArtworkPanel
-            label="店內氛圍"
-            title="安靜、明亮、好整理的空間。"
-            description=""
-            tone="moss"
-            className="artwork-panel--location"
-          />
-        </div>
-      </section>
-
-      <section className="page-block" id="booking-guide">
-        <div className="page-block__head">
-          <div>
-            <p className="section-eyebrow">預約引導</p>
-            <h2>四步完成預約</h2>
-          </div>
-          <Link to="/booking" className="button button--gold">
-            立即預約
-          </Link>
-        </div>
-        <div className="step-grid">
-          {bookingSteps.map((step) => (
-            <article key={step.number} className="step-card">
-              <span>{step.number}</span>
-              <h3>{step.title}</h3>
-              <p>{step.text}</p>
             </article>
           ))}
         </div>
