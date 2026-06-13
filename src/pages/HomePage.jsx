@@ -226,29 +226,47 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="page-block" id="designers">
+      <section className="page-block page-block--designers" id="designers">
         <div className="page-block__head">
           <div>
             <p className="section-eyebrow">設計師</p>
             <h2></h2>
           </div>
-          <div className="page-block__actions">
-            <button
-              type="button"
-              className="button button--ghost"
-              onClick={() => setGroupIndex((value) => (value + designerGroups.length - 1) % designerGroups.length)}
-            >
-              上一組
-            </button>
-            <button
-              type="button"
-              className="button button--gold"
-              onClick={() => setGroupIndex((value) => (value + 1) % designerGroups.length)}
-            >
-              下一組
-            </button>
-          </div>
         </div>
+        <button
+          type="button"
+          className="designer-nav designer-nav--prev"
+          onClick={() => setGroupIndex((value) => (value + designerGroups.length - 1) % designerGroups.length)}
+          aria-label="切換到上一組設計師"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M15 5l-7 7 7 7"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+        <button
+          type="button"
+          className="designer-nav designer-nav--next"
+          onClick={() => setGroupIndex((value) => (value + 1) % designerGroups.length)}
+          aria-label="切換到下一組設計師"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M9 5l7 7-7 7"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
         <div className="designer-grid">
           {activeDesigners.map((designer) => (
             <DesignerCard key={designer.name} item={designer} />
