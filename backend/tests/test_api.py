@@ -105,3 +105,21 @@ def test_appointment_conflict_is_rejected(tmp_path):
     )
     assert second.status_code == 409
     assert second.json()["error"]["code"] == "APPOINTMENT_CONFLICT"
+
+
+def test_assistant_message_returns_suggestions(tmp_path):
+    client = make_client(tmp_path)
+    target_date = next_bookable_date()
+
+    response = client.post(
+        "/assistant/message",
+        json={"message": f"{target_date} 晚上想剪髮"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()["data"]
+    assert payload["parsed"]["serviceId"] == "service-cut"
+    assert payload["parsed"]["dateValue"] == target_date
+    assert payload["canBook"] is True
+    assert len(payload["suggestions"]) >= 1
+    assert payload["suggestions"][0]["serviceId"] == "service-cut"

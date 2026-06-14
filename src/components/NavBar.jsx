@@ -9,6 +9,7 @@ export function NavBar() {
   const navigate = useNavigate();
 
   const displayName = currentUser?.name ?? '訪客';
+  const isStaff = currentUser?.role === 'barber' || currentUser?.role === 'admin';
   const memberLabel = currentUser?.role === 'customer' ? '會員' : '已登入';
 
   const navItems = useMemo(
@@ -53,17 +54,26 @@ export function NavBar() {
           {navItems
             .filter((item) => !item.authOnly || isAuthed)
             .map((item) => (
-              <Link key={item.to} to={item.to} className="nav-link-button" onClick={() => setOpen(false)}>
+              <Link key={item.to} to={item.to} className="nav-link-button nav-link-button--pill" onClick={() => setOpen(false)}>
                 {item.label}
               </Link>
             ))}
 
           {!isAuthed ? (
-            <Link to="/login" className="button button--gold" onClick={() => setOpen(false)}>
+            <Link to="/login" className="button button--gold nav-action-button" onClick={() => setOpen(false)}>
               登入 / 註冊
             </Link>
           ) : (
             <>
+              {isStaff ? (
+                <Link
+                  to="/dashboard"
+                  className="button button--ghost nav-action-button nav-action-button--subtle"
+                  onClick={() => setOpen(false)}
+                >
+                  後台管理
+                </Link>
+              ) : null}
               <div className="nav-user">
                 <div>
                   <strong>{displayName}</strong>
@@ -72,7 +82,7 @@ export function NavBar() {
               </div>
               <button
                 type="button"
-                className="button button--ghost"
+                className="button button--ghost nav-action-button"
                 onClick={handleLogout}
                 disabled={busy}
               >

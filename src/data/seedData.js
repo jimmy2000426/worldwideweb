@@ -64,6 +64,16 @@ export function createSeedState() {
       durationMinutes: 60,
       isActive: true,
     },
+    {
+      id: 'service-perm',
+      name: '燙髮設計',
+      description: '依髮質與臉型調整捲度與支撐度，做出更有線條感的燙髮造型。',
+      teaser: '讓捲度自然撐起整體輪廓。',
+      priceRange: 'NT$1,800 - 3,200',
+      basePrice: 1800,
+      durationMinutes: 150,
+      isActive: true,
+    },
   ];
 
   const addons = [
@@ -119,6 +129,42 @@ export function createSeedState() {
       isActive: true,
     },
     {
+      id: 'user-barber-3',
+      name: 'Joy',
+      email: 'joy@test.com',
+      phone: '0911000002',
+      password: 'barber123',
+      role: 'barber',
+      isActive: true,
+    },
+    {
+      id: 'user-barber-4',
+      name: 'Mila',
+      email: 'mila@test.com',
+      phone: '0911000003',
+      password: 'barber123',
+      role: 'barber',
+      isActive: true,
+    },
+    {
+      id: 'user-barber-5',
+      name: 'Neo',
+      email: 'neo@test.com',
+      phone: '0911000004',
+      password: 'barber123',
+      role: 'barber',
+      isActive: true,
+    },
+    {
+      id: 'user-barber-6',
+      name: 'Luna',
+      email: 'luna@test.com',
+      phone: '0911000005',
+      password: 'barber123',
+      role: 'barber',
+      isActive: true,
+    },
+    {
       id: 'user-customer-1',
       name: '林小姐',
       email: 'sakura@example.com',
@@ -144,6 +190,38 @@ export function createSeedState() {
       displayName: 'BEN',
       bio: '專注日韓系燙髮與髮色設計，適合追求層次與輪廓的人。',
       specialty: '燙髮 / 染髮設計',
+      isAvailable: true,
+    },
+    {
+      id: 'profile-barber-3',
+      userId: 'user-barber-3',
+      displayName: 'Joy',
+      bio: '擅長短髮輪廓與俐落層次，讓日常造型更好整理。',
+      specialty: '短髮 / 質感造型',
+      isAvailable: true,
+    },
+    {
+      id: 'profile-barber-4',
+      userId: 'user-barber-4',
+      displayName: 'Mila',
+      bio: '把長髮做得輕盈、有空氣感，也很重視髮絲光澤。',
+      specialty: '長髮 / 柔霧染髮',
+      isAvailable: true,
+    },
+    {
+      id: 'profile-barber-5',
+      userId: 'user-barber-5',
+      displayName: 'Neo',
+      bio: '先看平常整理習慣，再決定層次和長度，強調實用性。',
+      specialty: '男生髮 / 油頭剪裁',
+      isAvailable: true,
+    },
+    {
+      id: 'profile-barber-6',
+      userId: 'user-barber-6',
+      displayName: 'Luna',
+      bio: '擅長做出自然、輕盈的中長髮線條，日常也很好整理。',
+      specialty: '中長髮 / 空氣感',
       isAvailable: true,
     },
   ];
@@ -246,7 +324,7 @@ export function createSeedState() {
   ];
 
   return {
-    version: 2,
+    version: 4,
     users,
     services,
     addons,

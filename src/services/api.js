@@ -18,6 +18,7 @@ const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || getDefaultApiBaseUrl(
 const SESSION_KEY = 'styletrim-session-v2';
 const LEGACY_ROLE_KEY = 'userRole';
 const LEGACY_NAME_KEY = 'userName';
+const seedState = createSeedState();
 
 export class ApiError extends Error {
   constructor(code, message, status = 400) {
@@ -83,8 +84,24 @@ function mapBarberProfile(profile) {
   };
 }
 
+function mergeBarbers(remoteBarbers) {
+  const mappedRemote = remoteBarbers.map((item) => ({
+    ...sanitizeUser(item),
+    profile: mapBarberProfile(item.profile),
+  }));
+  const remoteIds = new Set(mappedRemote.map((item) => item.id));
+  const missingSeedBarbers = seedState.users
+    .filter((user) => user.role === 'barber' && !remoteIds.has(user.id))
+    .map((user) => ({
+      ...sanitizeUser(user),
+      profile: mapBarberProfile(seedState.barberProfiles.find((profile) => profile.userId === user.id) ?? null),
+    }));
+
+  return [...mappedRemote, ...missingSeedBarbers];
+}
+
 function mapService(service) {
-  const seed = createSeedState().services.find((item) => item.id === service.id) ?? {};
+  const seed = seedState.services.find((item) => item.id === service.id) ?? {};
   return {
     id: service.id,
     name: service.name,
@@ -95,6 +112,19 @@ function mapService(service) {
     durationMinutes: service.duration_minutes,
     isActive: service.is_active,
   };
+}
+
+function mergeServices(remoteServices) {
+  const mappedRemote = remoteServices.map(mapService);
+  const remoteIds = new Set(mappedRemote.map((service) => service.id));
+  const missingSeedServices = seedState.services
+    .filter((service) => !remoteIds.has(service.id))
+    .map((service) => ({
+      ...service,
+      isActive: service.isActive ?? true,
+    }));
+
+  return [...mappedRemote, ...missingSeedServices];
 }
 
 function mapAddon(addon) {
@@ -219,23 +249,41 @@ function createSession(user, tokens, rememberMe = true) {
 
 function saveSession(session) {
   if (!storageAvailable()) return;
-  const targetStorage = session.rememberMe ? localStorage : sessionStorage;
-  const otherStorage = session.rememberMe ? sessionStorage : localStorage;
-  writeJSON(targetStorage, SESSION_KEY, session);
-  removeKey(otherStorage, SESSION_KEY);
+  if (session.rememberMe) {
+    writeJSON(localStorage, SESSION_KEY, session);
+    removeKey(sessionStorage, SESSION_KEY);
+    return;
+  }
+
+  writeJSON(sessionStorage, SESSION_KEY, session);
 }
 
-function clearSession() {
-  removeKey(localStorage, SESSION_KEY);
-  removeKey(sessionStorage, SESSION_KEY);
+function clearSession(session = null) {
+  if (!storageAvailable()) return;
+
+  if (!session) {
+    removeKey(localStorage, SESSION_KEY);
+    removeKey(sessionStorage, SESSION_KEY);
+    removeKey(localStorage, LEGACY_ROLE_KEY);
+    removeKey(localStorage, LEGACY_NAME_KEY);
+    return;
+  }
+
+  if (session.rememberMe) {
+    removeKey(localStorage, SESSION_KEY);
+  } else {
+    removeKey(sessionStorage, SESSION_KEY);
+  }
+
   removeKey(localStorage, LEGACY_ROLE_KEY);
   removeKey(localStorage, LEGACY_NAME_KEY);
 }
 
 function loadSession() {
   if (!storageAvailable()) return null;
-  const local = readJSON(localStorage, SESSION_KEY);
-  const session = local ?? readJSON(sessionStorage, SESSION_KEY);
+  const tabSession = readJSON(sessionStorage, SESSION_KEY);
+  const localSession = readJSON(localStorage, SESSION_KEY);
+  const session = tabSession ?? localSession;
   if (!session?.userId || !session?.refreshToken) return null;
   return session;
 }
@@ -249,7 +297,6 @@ function mergeUsers({ barbers, currentUser }) {
 }
 
 function buildState({ services, addons, barbers, appointments, currentUser }) {
-  const seed = createSeedState();
   const mappedBarbers = barbers.map((item) => ({
     ...sanitizeUser(item),
     profile: mapBarberProfile(item.profile),
@@ -260,9 +307,9 @@ function buildState({ services, addons, barbers, appointments, currentUser }) {
     .filter(Boolean);
 
   return {
-    version: seed.version,
+    version: seedState.version,
     users,
-    services,
+    services: mergeServices(services),
     addons,
     barberProfiles,
     availabilitySlots: createWorkingSlots(barberProfiles.map((profile) => profile.userId)),
@@ -293,7 +340,7 @@ async function getAuthenticatedUser(session) {
         session: nextSession,
       };
     } catch {
-      clearSession();
+      clearSession(session);
       return { user: null, session: null };
     }
   }
@@ -307,12 +354,9 @@ async function loadPublicData() {
   ]);
 
   return {
-    services: (servicesData.items ?? []).map(mapService),
+    services: servicesData.items ?? [],
     addons: (addonsData.items ?? []).map(mapAddon),
-    barbers: (barbersData.items ?? []).map((item) => ({
-      ...sanitizeUser(item),
-      profile: mapBarberProfile(item.profile),
-    })),
+    barbers: mergeBarbers(barbersData.items ?? []),
   };
 }
 
@@ -407,7 +451,7 @@ export async function logout() {
       // Ignore logout cleanup failures and still clear local session state.
     }
   }
-  clearSession();
+  clearSession(session);
   const next = await buildAppState(null);
   return { state: next.state };
 }
@@ -669,5 +713,19 @@ export async function getBookingQuote(state, serviceId, addonIds = []) {
     basePrice: service?.basePrice ?? 0,
     addonPrice: addons.reduce((sum, addon) => sum + addon.price, 0),
     totalPrice: (service?.basePrice ?? 0) + addons.reduce((sum, addon) => sum + addon.price, 0),
+  };
+}
+
+export async function queryAssistant(message) {
+  const data = await fetchJson('/assistant/message', {
+    method: 'POST',
+    body: { message },
+  });
+
+  return {
+    message: data.message ?? '',
+    parsed: data.parsed ?? {},
+    suggestions: data.suggestions ?? [],
+    canBook: Boolean(data.canBook),
   };
 }

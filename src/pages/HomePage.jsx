@@ -1,25 +1,23 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { formatCurrency } from '../components/Ui';
 import { makeSalonArtwork } from '../utils/visuals';
-import shampooSlide from '../assets/hero-slides/shampoo.webp';
+import { designerGroups, getDesignerGroup } from '../data/designers';
 import cuttingSlide from '../assets/hero-slides/cutting.webp';
 import coloringSlide from '../assets/hero-slides/coloring.webp';
 
 const heroSlides = [
   {
-    eyebrow: 'Salon Mood',
     title: '',
     subtitle: '',
-    image: shampooSlide,
+    image: '/hero-slides/shampoo-promo.png',
     fit: 'contain',
     background: '#f7efe1',
     position: 'center center',
     tone: 'gold',
   },
   {
-    eyebrow: 'Hair Story',
     title: '',
     subtitle: '',
     image: cuttingSlide,
@@ -29,7 +27,6 @@ const heroSlides = [
     tone: 'rose',
   },
   {
-    eyebrow: 'Style & Trim',
     title: '',
     subtitle: ' ',
     image: coloringSlide,
@@ -40,26 +37,27 @@ const heroSlides = [
   },
 ];
 
-const featuredWorks = [
-  { title: '奶茶霧棕', tags: ['柔霧', '好整理'], tone: 'gold' },
-  { title: '俐落短髮', tags: ['輪廓感', '清爽'], tone: 'ink' },
-  { title: '霧面灰棕', tags: ['氣質感', '低調'], tone: 'rose' },
-  { title: '自然內彎', tags: ['日常感', '柔和'], tone: 'moss' },
-  { title: '鬆感燙髮', tags: ['空氣感', '蓬鬆'], tone: 'gold' },
-  { title: '深色光澤染', tags: ['沉穩', '有質感'], tone: 'ink' },
-];
-
-const designerGroups = [
-  [
-    { name: 'Alex', style: '油頭 / 漸層推剪', vibe: '輪廓乾淨，線條俐落。', tone: 'gold' },
-    { name: 'BEN', style: '燙髮 / 染髮設計', vibe: '偏日韓感，顏色和層次都細緻。', tone: 'rose' },
-    { name: 'Joy', style: '短髮 / 質感造型', vibe: '擅長把日常髮型做得更有精神。', tone: 'ink' },
-  ],
-  [
-    { name: 'Mila', style: '長髮 / 柔霧染髮', vibe: '適合想保留柔軟感的客人。', tone: 'moss' },
-    { name: 'Neo', style: '男生髮 / 油頭剪裁', vibe: '重視輪廓與整理手感。', tone: 'gold' },
-    { name: 'Luna', style: '中長髮 / 空氣感', vibe: '自然、輕盈，日常也很好打理。', tone: 'rose' },
-  ],
+const hairstyleStyles = [
+  {
+    name: '男生髮型',
+    images: ['/hairstyles/male-1.png', '/hairstyles/male-2.png', '/hairstyles/male-3.png'],
+    tones: ['gold', 'rose', 'moss'],
+  },
+  {
+    name: '女生髮型',
+    images: ['/hairstyles/female-1.png', '/hairstyles/female-2.png', '/hairstyles/female-3.png'],
+    tones: ['ink', 'gold', 'rose'],
+  },
+  {
+    name: '燙髮',
+    images: ['/hairstyles/perm-1.png', '/hairstyles/perm-2.png', '/hairstyles/perm-3.png'],
+    tones: ['moss', 'gold', 'ink'],
+  },
+  {
+    name: '染髮',
+    images: ['/hairstyles/color-1.png', '/hairstyles/color-2.png', '/hairstyles/color-3.png'],
+    tones: ['rose', 'moss', 'gold'],
+  },
 ];
 
 function HeroCarousel() {
@@ -145,7 +143,7 @@ function HeroCarousel() {
 }
 
 function BrandIntro() {
-  const image = useMemo(() => makeSalonArtwork('gold'), []);
+  const image = useMemo(() => '/brand-intro/brand-intro-hero.png', []);
 
   return (
     <section className="brand-intro" id="brand">
@@ -153,7 +151,7 @@ function BrandIntro() {
       <div className="brand-intro__copy">
         <h2>Style &amp; Trim</h2>
         <p className="brand-intro__text">
-          讓焦點留給髮型本身。
+          先看風格、再選設計師與時段，幾步就能完成預約。手機上也能快速確認資訊，想安排造型時更省心。
         </p>
       </div>
     </section>
@@ -161,75 +159,150 @@ function BrandIntro() {
 }
 
 function WorkCard({ work }) {
-  const image = useMemo(() => makeSalonArtwork(work.tone), [work.tone]);
+  const image = useMemo(() => work.image ?? makeSalonArtwork(work.tone), [work.image, work.tone]);
 
   return (
     <article className="work-card">
       <div className="work-card__image" style={{ backgroundImage: `url("${image}")` }} aria-hidden="true" />
-      <div className="work-card__meta">
-        <strong>{work.title}</strong>
-        <div className="work-card__tags">
-          {work.tags.map((tag) => (
-            <span key={tag}>{tag}</span>
-          ))}
-        </div>
-      </div>
     </article>
   );
 }
 
 function DesignerCard({ item }) {
-  const image = useMemo(() => makeSalonArtwork(item.tone), [item.tone]);
+  const image = useMemo(() => item.image ?? makeSalonArtwork(item.tone), [item.image, item.tone]);
 
   return (
-    <article className="designer-card">
-      <div className="designer-card__image" style={{ backgroundImage: `url("${image}")` }} aria-hidden="true" />
+    <Link to={`/designers/${item.id}`} className="designer-card" aria-label={`查看 ${item.name} 的個人介紹`}>
+      <div
+        className="designer-card__image"
+        style={{ backgroundImage: `url("${image}")`, backgroundPosition: 'center top' }}
+        aria-hidden="true"
+      />
+      <div className="designer-card__overlay">
+        <span className="designer-card__hint">專長</span>
+        <strong>{item.specialty}</strong>
+        <p>{item.vibe}</p>
+        <span className="designer-card__cta">點擊看個人介紹</span>
+      </div>
       <div className="designer-card__body">
         <strong>{item.name}</strong>
-        <span className="designer-card__hint"></span>
+        <span className="designer-card__hint">個人介紹</span>
       </div>
-      <div className="designer-card__overlay">
-        <p>{item.style}</p>
-        <small>{item.vibe}</small>
-      </div>
-    </article>
+    </Link>
   );
 }
 
 export function HomePage() {
   const { state } = useApp();
   const [groupIndex, setGroupIndex] = useState(0);
+  const [hairstyleIndex, setHairstyleIndex] = useState(0);
+  const hairstyleSectionRef = useRef(null);
+  const designerSectionRef = useRef(null);
+  const [revealedSections, setRevealedSections] = useState({
+    hairstyle: false,
+    designers: false,
+  });
 
   const services = state?.services?.filter((service) => service.isActive) ?? [];
-  const activeDesigners = designerGroups[groupIndex];
-  const displayWorks = featuredWorks.slice(0, 6);
+  const activeDesigners = getDesignerGroup(groupIndex);
+  const activeHairstyle = hairstyleStyles[hairstyleIndex];
+  const displayWorks = activeHairstyle.images.map((image, index) => ({
+    tone: activeHairstyle.tones[index % activeHairstyle.tones.length],
+    image,
+    id: `${activeHairstyle.name}-${index}`,
+  }));
+
+  useEffect(() => {
+    const targets = [
+      { ref: hairstyleSectionRef, key: 'hairstyle' },
+      { ref: designerSectionRef, key: 'designers' },
+    ];
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const key = entry.target.dataset.revealKey;
+          if (!key) {
+            return;
+          }
+
+          if (!entry.isIntersecting) {
+            return;
+          }
+
+          setRevealedSections((current) => (current[key] ? current : { ...current, [key]: true }));
+        });
+      },
+      {
+        threshold: 0.18,
+        rootMargin: '0px 0px -22% 0px',
+      },
+    );
+
+    targets.forEach(({ ref, key }) => {
+      if (ref.current) {
+        ref.current.dataset.revealKey = key;
+        observer.observe(ref.current);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <>
       <HeroCarousel />
       <BrandIntro />
 
-      <section className="page-block" id="works">
-        <div className="page-block__head">
-          <div>
-            <p className="section-eyebrow"></p>
-            <h2>hair stlye</h2>
+      <section
+        ref={hairstyleSectionRef}
+        className={revealedSections.hairstyle ? 'page-block hairstyle-block is-revealed' : 'page-block hairstyle-block'}
+        id="works"
+      >
+        <div className="page-block__head page-block__head--stacked">
+          <p className="section-eyebrow">Hairstyle</p>
+          <h2>髮型靈感</h2>
+          <div className="style-tabs hairstyle-block__tabs" aria-label="風格分類">
+            {hairstyleStyles.map((style, styleIndex) => (
+              <button
+                key={style.name}
+                type="button"
+                className={styleIndex === hairstyleIndex ? 'style-tabs__button is-active' : 'style-tabs__button'}
+                onClick={() => setHairstyleIndex(styleIndex)}
+              >
+                {style.name}
+              </button>
+            ))}
           </div>
-          <Link to="/works" className="button button--ghost">
-            查看更多作品
-          </Link>
         </div>
-        <div className="work-grid">
-          {displayWorks.map((work) => (
-            <WorkCard key={work.title} work={work} />
+        <div className="hairstyle-block__grid">
+          {displayWorks.map((work, index) => (
+            <div
+              key={work.id}
+              className="hairstyle-block__item"
+              style={{ '--reveal-delay': `${index * 0.12}s` }}
+            >
+              <WorkCard work={work} />
+            </div>
           ))}
         </div>
+        <Link to="/works" className="hairstyle-block__more">
+          查看更多作品
+        </Link>
       </section>
 
-      <section className="page-block page-block--designers" id="designers">
+      <section
+        ref={designerSectionRef}
+        className={
+          revealedSections.designers
+            ? 'page-block page-block--designers is-revealed'
+            : 'page-block page-block--designers'
+        }
+        id="designers"
+      >
         <div className="page-block__head">
           <div>
-            <p className="section-eyebrow">設計師</p>
+            <p className="designer-profile__title">設計師</p>
             <h2></h2>
           </div>
         </div>
@@ -268,8 +341,14 @@ export function HomePage() {
           </svg>
         </button>
         <div className="designer-grid">
-          {activeDesigners.map((designer) => (
-            <DesignerCard key={designer.name} item={designer} />
+          {activeDesigners.map((designer, index) => (
+            <div
+              key={designer.name}
+              className="designer-grid__item"
+              style={{ '--reveal-delay': `${index * 0.12}s` }}
+            >
+              <DesignerCard item={designer} />
+            </div>
           ))}
         </div>
       </section>
@@ -277,7 +356,7 @@ export function HomePage() {
       <section className="page-block" id="services">
         <div className="page-block__head">
           <div>
-            <p className="section-eyebrow">服務項目</p>
+            <p className="designer-profile__title">服務項目</p>
             <h2></h2>
           </div>
         </div>

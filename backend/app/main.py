@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
-from datetime import datetime, UTC
+from datetime import datetime, UTC, date, timedelta
+import re
 
 from fastapi import Depends, FastAPI, Header, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,6 +22,9 @@ from .models import (
 )
 from .schemas import (
     AddonRead,
+    AssistantParsedRead,
+    AssistantQueryRequest,
+    AssistantSuggestionRead,
     ApiEnvelope,
     AppointmentAddonRead,
     AppointmentCreateRequest,
@@ -41,6 +45,11 @@ from .security import create_token_pair, decode_token, hash_password, token_hash
 
 def utcnow():
     return datetime.now(UTC)
+
+
+def date_label(value: date) -> str:
+    weekday_map = ["日", "一", "二", "三", "四", "五", "六"]
+    return f"{value.year}/{value.month:02d}/{value.day:02d}（週{weekday_map[value.weekday()]}）"
 
 
 def make_error(code: str, message: str, status_code: int):
@@ -359,6 +368,43 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         items = get_available_barbers(db, date, time, service.duration_minutes)
         return ApiEnvelope(data={"items": items})
 
+    @app.post("/assistant/message", response_model=ApiEnvelope)
+    def assistant_message(
+        payload: AssistantQueryRequest,
+        db: Session = Depends(db_dependency),
+    ):
+        services = (
+            db.execute(select(Service).where(Service.is_active.is_(True)).order_by(Service.name))
+            .scalars()
+            .all()
+        )
+        barbers = (
+            db.execute(select(User).where(User.role == "barber", User.is_active.is_(True)).order_by(User.name))
+            .scalars()
+            .all()
+        )
+        profiles = {
+            profile.user_id: profile
+            for profile in db.execute(select(BarberProfile)).scalars().all()
+        }
+
+        reply, parsed, suggestions, can_book = query_assistant_suggestions(
+            message=payload.message,
+            db=db,
+            services=services,
+            barbers=barbers,
+            profiles=profiles,
+        )
+
+        return ApiEnvelope(
+            data={
+                "message": reply,
+                "parsed": parsed.model_dump(),
+                "suggestions": [item.model_dump() for item in suggestions],
+                "canBook": can_book,
+            }
+        )
+
     @app.get("/me/profile", response_model=ApiEnvelope)
     def get_profile(current_user: User = Depends(auth_dependency)):
         return ApiEnvelope(data={"profile": UserRead.model_validate(current_user).model_dump()})
@@ -470,6 +516,284 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 }
             )
         return output
+
+    def normalize_text(value: str | None) -> str:
+        return re.sub(r"\s+", "", (value or "").lower())
+
+    def current_date() -> date:
+        return datetime.now().astimezone().date()
+
+    def to_minutes(value: str) -> int:
+        hours, minutes = map(int, value.split(":"))
+        return hours * 60 + minutes
+
+    def from_minutes(value: int) -> str:
+        return f"{value // 60:02d}:{value % 60:02d}"
+
+    def build_time_options_for_date(date_value: date, duration_minutes: int) -> list[str]:
+        if date_value < current_date() or date_value.weekday() == 6:
+            return []
+
+        start_boundary = 10 * 60
+        if date_value == current_date():
+            now = datetime.now().astimezone()
+            current_minutes = now.hour * 60 + now.minute
+            start_boundary = max(start_boundary, ((current_minutes + 1 + 29) // 30) * 30)
+
+        options = []
+        minutes = start_boundary
+        while minutes + duration_minutes <= 19 * 60:
+            options.append(from_minutes(minutes))
+            minutes += 30
+        return options
+
+    def parse_message_date(message: str) -> tuple[date | None, str | None, bool]:
+        normalized = normalize_text(message)
+        today = current_date()
+
+        explicit = re.search(r"(?P<year>\d{4})[./-](?P<month>\d{1,2})[./-](?P<day>\d{1,2})", normalized)
+        if explicit:
+            try:
+                parsed = date(
+                    int(explicit.group("year")),
+                    int(explicit.group("month")),
+                    int(explicit.group("day")),
+                )
+                return parsed, date_label(parsed), True
+            except ValueError:
+                pass
+
+        relative_map = [
+            ("今天", 0, "今天"),
+            ("今日", 0, "今天"),
+            ("明天", 1, "明天"),
+            ("明日", 1, "明天"),
+            ("後天", 2, "後天"),
+        ]
+        for token, offset, label in relative_map:
+            if token in normalized:
+                parsed = today + timedelta(days=offset)
+                return parsed, label, False
+
+        weekday_aliases = {
+            "週一": 0,
+            "星期一": 0,
+            "禮拜一": 0,
+            "週二": 1,
+            "星期二": 1,
+            "禮拜二": 1,
+            "週三": 2,
+            "星期三": 2,
+            "禮拜三": 2,
+            "週四": 3,
+            "星期四": 3,
+            "禮拜四": 3,
+            "週五": 4,
+            "星期五": 4,
+            "禮拜五": 4,
+            "週六": 5,
+            "星期六": 5,
+            "禮拜六": 5,
+        }
+        for token, weekday_index in weekday_aliases.items():
+            if token in normalized:
+                offset = (weekday_index - today.weekday()) % 7
+                if offset == 0 and token in {"週六", "星期六", "禮拜六"} and today.weekday() != 5:
+                    offset = 7
+                parsed = today + timedelta(days=offset)
+                return parsed, date_label(parsed), False
+
+        if "週末" in normalized or "周末" in normalized:
+            offset = (5 - today.weekday()) % 7
+            if offset == 0 and today.weekday() != 5:
+                offset = 7
+            parsed = today + timedelta(days=offset)
+            return parsed, "週末", False
+
+        return None, None, False
+
+    def parse_time_preference(message: str) -> dict:
+        normalized = normalize_text(message)
+        if not normalized:
+            return {"label": None, "start": None, "end": None, "target": None, "sort": "earliest"}
+
+        if "最晚" in normalized or "越晚" in normalized:
+            return {"label": "晚一點", "start": None, "end": None, "target": None, "sort": "latest"}
+
+        if "最早" in normalized or "越早" in normalized:
+            return {"label": "最早", "start": None, "end": None, "target": None, "sort": "earliest"}
+
+        ranges = [
+            (("早上", "上午"), 10 * 60, 12 * 60, "早上"),
+            (("中午",), 12 * 60, 14 * 60, "中午"),
+            (("下午",), 13 * 60, 17 * 60, "下午"),
+            (("傍晚",), 17 * 60, 18 * 60 + 30, "傍晚"),
+            (("晚上",), 18 * 60, 19 * 60, "晚上"),
+        ]
+        for keywords, start, end, label in ranges:
+            if any(keyword in normalized for keyword in keywords):
+                return {"label": label, "start": start, "end": end, "target": None, "sort": "earliest"}
+
+        explicit = re.search(
+            r"(?<![\d-])(?:(上午|早上|中午|下午|傍晚|晚上))?\s*(?P<hour>\d{1,2})(?::(?P<minute>\d{2}))?\s*點?",
+            normalized,
+        )
+        if explicit:
+            hour = int(explicit.group("hour"))
+            minute = int(explicit.group("minute") or 0)
+            period = explicit.group(1)
+            if period in {"下午", "傍晚", "晚上"} and hour < 12:
+                hour += 12
+            elif period in {"上午", "早上"} and hour == 12:
+                hour = 0
+            elif not period and 1 <= hour <= 7:
+                hour += 12
+
+            target = hour * 60 + minute
+            return {
+                "label": f"{hour:02d}:{minute:02d}",
+                "start": max(10 * 60, target - 60),
+                "end": min(19 * 60, target + 60),
+                "target": target,
+                "sort": "closest",
+            }
+
+        return {"label": None, "start": None, "end": None, "target": None, "sort": "earliest"}
+
+    def find_service_from_message(message: str, services: list[Service]) -> Service | None:
+        normalized = normalize_text(message)
+        service_keywords = {
+            "service-cut": ["洗剪", "剪髮", "剪发", "修剪", "cut"],
+            "service-color": ["染髮", "染发", "染色", "染", "color"],
+            "service-care": ["護髮", "頭皮", "養護", "care"],
+            "service-perm": ["燙髮", "燙发", "捲髮", "perm", "perm設計", "perm design"],
+        }
+
+        for service in services:
+            service_name = normalize_text(service.name)
+            if service_name and service_name in normalized:
+                return service
+            for keyword in service_keywords.get(service.id, []):
+                if normalize_text(keyword) in normalized:
+                    return service
+
+        return None
+
+    def find_barber_from_message(message: str, barbers: list[User], profiles: dict[str, BarberProfile]) -> User | None:
+        normalized = normalize_text(message)
+        if not normalized:
+            return None
+
+        for barber in barbers:
+            profile = profiles.get(barber.id)
+            candidates = [barber.name, profile.display_name if profile else "", profile.specialty if profile else ""]
+            if any(candidate and normalize_text(candidate) in normalized for candidate in candidates):
+                return barber
+        return None
+
+    def query_assistant_suggestions(
+        *,
+        message: str,
+        db: Session,
+        services: list[Service],
+        barbers: list[User],
+        profiles: dict[str, BarberProfile],
+        max_results: int = 3,
+    ):
+        service = find_service_from_message(message, services)
+        parsed_date, date_label_value, explicit_date = parse_message_date(message)
+        time_preference = parse_time_preference(message)
+        barber = find_barber_from_message(message, barbers, profiles)
+
+        missing = []
+        if not service:
+            missing.append("service")
+
+        today = current_date()
+        if parsed_date:
+            candidate_dates = [parsed_date + timedelta(days=offset) for offset in range(0, 7)]
+        else:
+            candidate_dates = [today + timedelta(days=offset) for offset in range(0, 7)]
+
+        suggestions = []
+        if service:
+            for date_value in candidate_dates:
+                if len(suggestions) >= max_results:
+                    break
+
+                if date_value.weekday() == 6 or date_value < today:
+                    continue
+
+                time_options = build_time_options_for_date(date_value, service.duration_minutes)
+                if time_preference["start"] is not None and time_preference["end"] is not None:
+                    time_options = [
+                        item
+                        for item in time_options
+                        if time_preference["start"] <= to_minutes(item) <= time_preference["end"]
+                    ]
+
+                if time_preference["sort"] == "latest":
+                    time_options = list(reversed(time_options))
+                elif time_preference["sort"] == "closest" and time_preference["target"] is not None:
+                    time_options = sorted(time_options, key=lambda item: abs(to_minutes(item) - time_preference["target"]))
+
+                for start_time in time_options:
+                    if len(suggestions) >= max_results:
+                        break
+
+                    available_barbers = get_available_barbers(
+                        db,
+                        date_value.isoformat(),
+                        start_time,
+                        service.duration_minutes,
+                    )
+                    if barber:
+                        available_barbers = [item for item in available_barbers if item["id"] == barber.id]
+
+                    if not available_barbers:
+                        continue
+
+                    chosen_barber = available_barbers[0]
+                    suggestions.append(
+                        AssistantSuggestionRead(
+                            date=date_value,
+                            startTime=start_time,
+                            endTime=calculate_end(start_time, service.duration_minutes),
+                            serviceId=service.id,
+                            serviceName=service.name,
+                            barberId=chosen_barber["id"] if barber else None,
+                            barberName=chosen_barber["profile"]["display_name"] if barber else None,
+                            availableBarbers=[
+                                item["profile"]["display_name"] if item.get("profile") else item["name"]
+                                for item in available_barbers
+                            ],
+                        )
+                    )
+
+        needs_clarification = not service
+        if needs_clarification:
+            reply = "我可以幫你查空檔，不過先告訴我想做哪一種服務，像是剪髮、染髮或護髮。"
+        elif suggestions:
+            reply = f"我幫你找到 {len(suggestions)} 個可約時段，先看這幾個最接近你需求的選項。"
+        elif parsed_date:
+            reply = f"{date_label_value or '這個日期'} 目前沒有合適空檔，我幫你再往後找幾天。"
+        else:
+            reply = "目前還沒找到合適空檔，我可以繼續幫你往後找。"
+
+        parsed = AssistantParsedRead(
+            intent="book",
+            serviceId=service.id if service else None,
+            serviceName=service.name if service else None,
+            dateValue=parsed_date,
+            dateLabel=date_label_value,
+            timeLabel=time_preference["label"],
+            barberId=barber.id if barber else None,
+            barberName=(profiles[barber.id].display_name if barber and barber.id in profiles else barber.name) if barber else None,
+            missing=missing,
+            needsClarification=needs_clarification,
+        )
+
+        return reply, parsed, suggestions, bool(service and suggestions)
 
     @app.post("/appointments", response_model=ApiEnvelope, status_code=status.HTTP_201_CREATED)
     def create_appointment(

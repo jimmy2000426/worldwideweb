@@ -6,7 +6,7 @@ import { ArtworkPanel, FeaturePill } from '../components/Ui';
 const loginSeed = {
   account: '',
   password: '',
-  rememberMe: true,
+  rememberMe: false,
 };
 
 const registerSeed = {
@@ -16,7 +16,7 @@ const registerSeed = {
   password: '',
   confirmPassword: '',
   acceptTerms: true,
-  rememberMe: true,
+  rememberMe: false,
 };
 
 function LoginHint() {
@@ -33,18 +33,28 @@ function LoginHint() {
   );
 }
 
+function FieldError({ children }) {
+  if (!children) return null;
+  return <small className="field-error">{children}</small>;
+}
+
 export function LoginPage() {
   const { login, register, busy, error, clearError } = useApp();
   const [mode, setMode] = useState('login');
   const [loginForm, setLoginForm] = useState(loginSeed);
   const [registerForm, setRegisterForm] = useState(registerSeed);
   const [localError, setLocalError] = useState('');
+  const [registerFieldErrors, setRegisterFieldErrors] = useState({
+    phone: '',
+    email: '',
+  });
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     clearError();
     setLocalError('');
+    setRegisterFieldErrors({ phone: '', email: '' });
   }, [mode, clearError]);
 
   const goNext = (role) => {
@@ -78,11 +88,17 @@ export function LoginPage() {
   const submitRegister = async (event) => {
     event.preventDefault();
     setLocalError('');
+    setRegisterFieldErrors({ phone: '', email: '' });
     try {
       const user = await register(registerForm);
       goNext(user.role);
     } catch (err) {
       setLocalError(err.message);
+      if (err.code === 'DUPLICATE_PHONE') {
+        setRegisterFieldErrors((current) => ({ ...current, phone: err.message }));
+      } else if (err.code === 'DUPLICATE_EMAIL') {
+        setRegisterFieldErrors((current) => ({ ...current, email: err.message }));
+      }
     }
   };
 
@@ -177,7 +193,7 @@ export function LoginPage() {
                     setLoginForm((current) => ({ ...current, rememberMe: event.target.checked }))
                   }
                 />
-                保持登入
+                保持登入（所有分頁共用）
               </label>
               <button type="button" className="text-button" onClick={() => setMode('register')}>
                 還沒有帳號？
@@ -206,23 +222,33 @@ export function LoginPage() {
               <input
                 type="tel"
                 value={registerForm.phone}
-                onChange={(event) =>
-                  setRegisterForm((current) => ({ ...current, phone: event.target.value }))
-                }
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setRegisterForm((current) => ({ ...current, phone: value }));
+                  if (registerFieldErrors.phone) {
+                    setRegisterFieldErrors((current) => ({ ...current, phone: '' }));
+                  }
+                }}
                 placeholder="09XX-XXX-XXX"
                 required
               />
+              <FieldError>{registerFieldErrors.phone}</FieldError>
             </label>
             <label>
               電子郵件（選填）
               <input
                 type="email"
                 value={registerForm.email}
-                onChange={(event) =>
-                  setRegisterForm((current) => ({ ...current, email: event.target.value }))
-                }
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setRegisterForm((current) => ({ ...current, email: value }));
+                  if (registerFieldErrors.email) {
+                    setRegisterFieldErrors((current) => ({ ...current, email: '' }));
+                  }
+                }}
                 placeholder="name@example.com"
               />
+              <FieldError>{registerFieldErrors.email}</FieldError>
             </label>
             <label>
               設定密碼
@@ -276,7 +302,7 @@ export function LoginPage() {
                     }))
                   }
                 />
-                保持登入
+                保持登入（所有分頁共用）
               </label>
             </div>
             <button type="submit" className="button button--gold button--full" disabled={busy}>

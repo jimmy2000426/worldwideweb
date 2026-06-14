@@ -9,6 +9,7 @@ export function AppProvider({ children }) {
   const [session, setSession] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [assistantOpen, setAssistantOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -40,6 +41,15 @@ export function AppProvider({ children }) {
     () => ({
       clearError() {
         setError('');
+      },
+      openAssistant() {
+        setAssistantOpen(true);
+      },
+      closeAssistant() {
+        setAssistantOpen(false);
+      },
+      toggleAssistant() {
+        setAssistantOpen((value) => !value);
       },
       async login(payload) {
         setBusy(true);
@@ -74,6 +84,7 @@ export function AppProvider({ children }) {
       async logout() {
         setBusy(true);
         try {
+          setAssistantOpen(false);
           const result = await api.logout();
           setState(result.state);
           setSession(null);
@@ -138,14 +149,18 @@ export function AppProvider({ children }) {
       ready,
       busy,
       error,
+      assistantOpen,
       clearError: actions.clearError,
+      openAssistant: actions.openAssistant,
+      closeAssistant: actions.closeAssistant,
+      toggleAssistant: actions.toggleAssistant,
       state,
       currentUser,
       isAuthed: Boolean(currentUser),
       role: currentUser?.role ?? 'guest',
       ...actions,
     }),
-    [ready, busy, error, state, currentUser, actions],
+    [ready, busy, error, state, currentUser, assistantOpen, actions],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

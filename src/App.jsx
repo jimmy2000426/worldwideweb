@@ -8,6 +8,7 @@ import { WorksPage } from './pages/WorksPage';
 import { AppointmentsPage } from './pages/AppointmentsPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { DesignerProfilePage } from './pages/DesignerProfilePage';
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
       <Route element={<Layout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/works" element={<WorksPage />} />
+        <Route path="/designers/:designerId" element={<DesignerProfilePage />} />
         <Route element={<GuestRoute />}>
           <Route path="/login" element={<LoginPage />} />
         </Route>

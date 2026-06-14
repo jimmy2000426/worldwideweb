@@ -5,10 +5,15 @@ import { SectionHeader, StatCard, StatusBadge, formatCurrency } from '../compone
 import { buildTimeOptions, getAvailableBarbers } from '../utils/booking';
 import { formatDateLabel, formatDateInput } from '../utils/date';
 
+function canRescheduleAppointment(status) {
+  return ['待確認', '已確認'].includes(status);
+}
+
 function AppointmentRow({ appointment, onConfirm, onComplete, onCancel, onEdit }) {
   const canConfirm = appointment.status === '待確認';
   const canComplete = appointment.status === '已確認';
   const canCancel = ['待確認', '已確認'].includes(appointment.status);
+  const canReschedule = canRescheduleAppointment(appointment.status);
 
   return (
     <tr>
@@ -30,29 +35,32 @@ function AppointmentRow({ appointment, onConfirm, onComplete, onCancel, onEdit }
       <td>{formatCurrency(appointment.totalPriceSnapshot)}</td>
       <td className="table-actions">
         {canConfirm ? (
-          <button type="button" className="table-action table-action--gold" onClick={() => onConfirm(appointment.id)}>
+          <button type="button" className="table-action table-action--gold table-action--primary" onClick={() => onConfirm(appointment.id)}>
             確認
           </button>
         ) : null}
         {canComplete ? (
-          <button type="button" className="table-action table-action--success" onClick={() => onComplete(appointment.id)}>
+          <button type="button" className="table-action table-action--success table-action--primary" onClick={() => onComplete(appointment.id)}>
             完成
           </button>
         ) : null}
         {canCancel ? (
-          <button type="button" className="table-action table-action--ghost" onClick={() => onCancel(appointment.id)}>
+          <button type="button" className="table-action table-action--ghost table-action--danger" onClick={() => onCancel(appointment.id)}>
             取消
           </button>
         ) : null}
-        <button type="button" className="table-action" onClick={() => onEdit(appointment)}>
-          改期
-        </button>
+        {canReschedule ? (
+          <button type="button" className="table-action table-action--edit" onClick={() => onEdit(appointment)}>
+            改期
+          </button>
+        ) : null}
       </td>
     </tr>
   );
 }
 
 function EditPanel({ appointment, state, onSave, onClose }) {
+  const canReschedule = canRescheduleAppointment(appointment.status);
   const service = state.services.find((item) => item.id === appointment.serviceId);
   const duration = service?.durationMinutes ?? appointment.serviceDurationSnapshot;
   const [date, setDate] = useState(appointment.appointmentDate);
@@ -95,15 +103,16 @@ function EditPanel({ appointment, state, onSave, onClose }) {
       </div>
 
       {error ? <div className="form-alert">{error}</div> : null}
+      {!canReschedule ? <div className="form-alert form-alert--neutral">這筆預約目前不能改期。</div> : null}
 
       <div className="form-grid">
         <label>
           日期
-          <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
+          <input type="date" value={date} onChange={(event) => setDate(event.target.value)} disabled={!canReschedule} />
         </label>
         <label>
           時間
-          <select value={time} onChange={(event) => setTime(event.target.value)}>
+          <select value={time} onChange={(event) => setTime(event.target.value)} disabled={!canReschedule}>
             {timeOptions.map((option) => (
               <option key={option} value={option}>
                 {option}
@@ -113,7 +122,7 @@ function EditPanel({ appointment, state, onSave, onClose }) {
         </label>
         <label className="form-grid__full">
           理髮師
-          <select value={barberId} onChange={(event) => setBarberId(event.target.value)}>
+          <select value={barberId} onChange={(event) => setBarberId(event.target.value)} disabled={!canReschedule}>
             {availableBarbers.map((barber) => (
               <option key={barber.id} value={barber.id}>
                 {barber.profile?.displayName ?? barber.name}
@@ -127,14 +136,19 @@ function EditPanel({ appointment, state, onSave, onClose }) {
         <div className="form-alert form-alert--neutral">這個改期後的時段目前沒有可用理髮師。</div>
       ) : null}
 
-      <div className="edit-panel__actions">
-        <button type="button" className="button button--ghost" onClick={onClose}>
+        <div className="edit-panel__actions">
+        <button type="button" className="button button--ghost button--soft" onClick={onClose}>
           取消
         </button>
         <button
           type="button"
-          className="button button--gold"
+          className="button button--gold button--prominent"
+          disabled={!canReschedule}
           onClick={() => {
+            if (!canReschedule) {
+              setError('這筆預約目前不能改期。');
+              return;
+            }
             if (!availableBarbers.some((barber) => barber.id === barberId)) {
               setError('指定的理髮師不可用。');
               return;
@@ -216,6 +230,10 @@ export function DashboardPage() {
 
   const handleSaveEdit = async (payload) => {
     if (!editingAppointment) return;
+    if (!canRescheduleAppointment(editingAppointment.status)) {
+      setEditingAppointment(null);
+      return;
+    }
     await rescheduleAppointment(editingAppointment.id, payload);
     setEditingAppointment(null);
   };
@@ -226,16 +244,15 @@ export function DashboardPage() {
         <SectionHeader
           eyebrow="員工後台"
           title={currentUser.role === 'admin' ? '管理員後台' : '理髮師後台'}
-          description="這裡可以查看預約、確認服務、完成服務與調整時段。"
         />
         <div className="header-actions">
-          <Link className="button button--ghost" to="/booking">
+          <Link className="button button--ghost button--soft" to="/booking">
             新增現場預約
           </Link>
           {currentUser.role === 'admin' ? (
             <button
               type="button"
-              className="button button--gold"
+              className="button button--gold button--prominent"
               onClick={() => {
                 document.getElementById('settings')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }}
@@ -257,7 +274,6 @@ export function DashboardPage() {
           <SectionHeader
             eyebrow="管理員專屬"
             title="店內資料設定與報表"
-            description="這一區可以放店內排班、營收與其他管理資訊。"
           />
           <div className="grid grid--services">
             <article className="info-card">

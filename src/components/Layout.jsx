@@ -1,6 +1,9 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
+import { useApp } from '../context/AppContext';
 import { NavBar } from './NavBar';
+import { LoadingScreen } from './Ui';
+import { AssistantChatPanel } from './AssistantChatPanel';
 
 function InstagramIcon() {
   return (
@@ -48,10 +51,24 @@ function LineIcon() {
 
 export function Layout() {
   const location = useLocation();
+  const { busy, isAuthed, assistantOpen, closeAssistant, toggleAssistant } = useApp();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!assistantOpen) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        closeAssistant();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [assistantOpen, closeAssistant]);
 
   const socialLinks = [
     {
@@ -77,9 +94,46 @@ export function Layout() {
   return (
     <div className="app-shell">
       <NavBar />
+      {busy && isAuthed ? (
+        <div className="global-loading" role="status" aria-live="polite" aria-label="登出中，請稍候…">
+          <div className="global-loading__panel">
+            <LoadingScreen label="登出中，請稍候…" />
+          </div>
+        </div>
+      ) : null}
       <main className="page-main">
         <Outlet />
       </main>
+      {assistantOpen ? (
+        <button type="button" className="assistant-backdrop" aria-label="關閉聊天窗" onClick={closeAssistant} />
+      ) : null}
+      <div className={assistantOpen ? 'assistant-fab is-open' : 'assistant-fab'} aria-live="polite">
+        <div
+          className="assistant-fab__panel"
+          role="dialog"
+          aria-modal="true"
+          aria-hidden={!assistantOpen}
+          aria-label="聊天對話框"
+        >
+          <AssistantChatPanel mode="dock" onClose={closeAssistant} />
+        </div>
+        <button
+          type="button"
+          className="assistant-fab__button"
+          onClick={toggleAssistant}
+          aria-label={assistantOpen ? '關閉聊天窗' : '開啟聊天窗'}
+          aria-expanded={assistantOpen}
+        >
+          <span className="assistant-fab__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M5 6.5A3.5 3.5 0 0 1 8.5 3h7A3.5 3.5 0 0 1 19 6.5v5A3.5 3.5 0 0 1 15.5 15H11l-4.2 3.6c-.5.4-1.3.1-1.3-.6V15H8.5A3.5 3.5 0 0 1 5 11.5v-5Z"
+                fill="currentColor"
+              />
+            </svg>
+          </span>
+        </button>
+      </div>
       <footer className="site-footer">
         <div className="site-footer__inner">
           <section className="site-footer__brand" aria-label="品牌資訊">

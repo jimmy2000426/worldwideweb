@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -139,3 +141,38 @@ class RescheduleRequest(BaseModel):
 
 class StatusRequest(BaseModel):
     nextStatus: str
+
+
+class AssistantQueryRequest(BaseModel):
+    message: str
+
+
+class AssistantSuggestionRead(BaseModel):
+    date: date
+    startTime: str
+    endTime: str
+    serviceId: str
+    serviceName: str
+    barberId: str | None = None
+    barberName: str | None = None
+    availableBarbers: list[str] = Field(default_factory=list)
+
+
+class AssistantParsedRead(BaseModel):
+    intent: str
+    serviceId: str | None = None
+    serviceName: str | None = None
+    dateValue: date | None = None
+    dateLabel: str | None = None
+    timeLabel: str | None = None
+    barberId: str | None = None
+    barberName: str | None = None
+    missing: list[str] = Field(default_factory=list)
+    needsClarification: bool = False
+
+
+class AssistantQueryResponse(BaseModel):
+    message: str
+    parsed: AssistantParsedRead
+    suggestions: list[AssistantSuggestionRead] = Field(default_factory=list)
+    canBook: bool = False
