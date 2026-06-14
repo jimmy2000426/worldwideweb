@@ -63,8 +63,8 @@ export function FeaturePill({ children }) {
   return <span className="feature-pill">{children}</span>;
 }
 
-export function ArtworkPanel({ title, description, label, tone = 'gold', className = '' }) {
-  const backgroundImage = useMemo(() => makeSalonArtwork(tone), [tone]);
+export function ArtworkPanel({ title, description, label, tone = 'gold', className = '', imageSrc = '' }) {
+  const backgroundImage = useMemo(() => imageSrc || makeSalonArtwork(tone), [imageSrc, tone]);
 
   return (
     <article className={`artwork-panel ${className}`.trim()}>

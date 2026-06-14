@@ -354,6 +354,7 @@ export function BookingPage() {
           title="俐落、乾淨、好整理的造型"
           description="適合想要快速整理，也想保留風格感的客人"
           tone="rose"
+          imageSrc="/booking/today-inspiration.png"
           className="artwork-panel--booking"
         />
       </div>
