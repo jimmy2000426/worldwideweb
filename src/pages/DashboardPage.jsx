@@ -103,7 +103,7 @@ function EditPanel({ appointment, state, onSave, onClose }) {
       </div>
 
       {error ? <div className="form-alert">{error}</div> : null}
-      {!canReschedule ? <div className="form-alert form-alert--neutral">這筆預約目前不能改期。</div> : null}
+      {!canReschedule ? <div className="form-alert form-alert--neutral">這筆預約目前不能改期</div> : null}
 
       <div className="form-grid">
         <label>
@@ -133,7 +133,7 @@ function EditPanel({ appointment, state, onSave, onClose }) {
       </div>
 
       {!availableBarbers.length ? (
-        <div className="form-alert form-alert--neutral">這個改期後的時段目前沒有可用理髮師。</div>
+        <div className="form-alert form-alert--neutral">這個改期後的時段目前沒有可用理髮師</div>
       ) : null}
 
         <div className="edit-panel__actions">
@@ -146,11 +146,11 @@ function EditPanel({ appointment, state, onSave, onClose }) {
           disabled={!canReschedule}
           onClick={() => {
             if (!canReschedule) {
-              setError('這筆預約目前不能改期。');
+              setError('這筆預約目前不能改期');
               return;
             }
             if (!availableBarbers.some((barber) => barber.id === barberId)) {
-              setError('指定的理髮師不可用。');
+              setError('指定的理髮師不可用');
               return;
             }
             onSave({ date, startTime: time, barberId });
@@ -279,17 +279,15 @@ export function DashboardPage() {
             <article className="info-card">
               <h3>營收統計</h3>
               <p>目前預估營收：{formatCurrency(stats.revenue)}</p>
-              <small>後續可接入週報與月報資料。</small>
+              <small>後續可接入週報與月報資料</small>
             </article>
             <article className="info-card">
               <h3>可用時段</h3>
-              <p>目前採固定時段制，之後可再擴充排班設定。</p>
-              <small>可將員工排班、休假與可預約區間接入這裡。</small>
+              <p>目前採固定時段制，之後可再擴充排班設定</p>
             </article>
             <article className="info-card">
               <h3>資料來源</h3>
-              <p>目前先用本機資料做展示，之後可切到正式資料來源。</p>
-              <small>先確保前台流程順暢，再逐步接正式後端。</small>
+              <p>目前先用本機資料做展示，之後可切到正式資料來源</p>
             </article>
           </div>
         </section>
@@ -353,7 +351,7 @@ export function DashboardPage() {
               ) : (
                 <tr>
                   <td colSpan="7" className="table-empty">
-                    目前沒有符合條件的預約。
+                    目前沒有符合條件的預約
                   </td>
                 </tr>
               )}
