@@ -326,6 +326,7 @@ export function BookingPage() {
             title="接下來只要等通知"
             description="如果需要調整時間，店家會再和你聯絡。"
             tone="gold"
+            imageSrc="/booking/booking-success.png"
             className="artwork-panel--success"
           />
           <div className="success-card__actions">
