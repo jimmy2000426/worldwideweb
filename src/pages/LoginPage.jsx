@@ -112,6 +112,7 @@ export function LoginPage() {
           label="會員空間"
           description="登入後可以快速查看預約、確認時間與管理紀錄。"
           tone="gold"
+          imageSrc="/login/scissors-on-table.png"
           className="artwork-panel--auth"
         />
         <div className="auth-visual__pills">
